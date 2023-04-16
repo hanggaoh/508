@@ -1,0 +1,162 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+# Problem 1:
+i. False. The interpretation of the coefficients depends on assumptions , for example, the exogeneity assumption. The regressors are not correlated with the error term. In addition, there are other factors that are not included in the regression model.
+
+ii. True, both t-tests and Wald tests rely on certain assumptions about the distribution of the error term u_i in a linear regression model. Specifically, these tests assume that the error term u_i is independently and identically distributed with a normal distribution, such that $u_i \sim N(0, \sigma^2)$. 
+
+iii. False. For such small sample size which may not meet the assumption that the samples are normally distributed and have equal variances.
+
+iv. False. If the new variables improve the fit of the model, then the adjusted-R2 will increase, but if the new variables do not improve the fit of the model, then the adjusted-R2 will decrease. 
+
+v. Flase. The impact of outliers on the $\hat{\beta}$ estimator depends on the degree of influence that the outliers have on the regression line and the sample size. If the sample size is small or the outliers have a significant influence on the regression line, the beta hat estimator may not be consistent.
+
+vi. True. When there is perfect collinearity, the OLS estimator beta hat is not well-defined and the matrix X'X becomes singular, meaning that its inverse does not exist. As a result, the OLS estimator is not consistent, and it does not converge to the true population parameter as the sample size increases.
+
+vii. True. The matrix X'X is nearly singular, which means that the inverse of X'X exists but is very large. The OLS estimator beta hat can be very sensitive to small changes in the data, and a small perturbation in the data can lead to large changes in the estimates of the regression coefficients. $\hat{\beta}$ is biased because it may not converge to the true population.
+
+viii. False. If the outliers have infinite fourth moments, the OLS estimator can be biased towards the direction of the outliers. This is because the OLS estimator is based on minimizing the sum of squared errors, and the presence of outliers can cause the estimator to overemphasize the importance of these extreme observations.
+
+# Problem 2
+i. 
+```{r}
+# package to open data set
+library ( foreign )
+
+# open data set
+data = read.dta('hprice2.dta')
+plot(x = data$nox,
+     y = data$price)
+```
+The scatter plot shows a linear relation ship between $nox$ and $price$, thus 1st LSA holds for model 1. There are no large outliers so the 3rd LSA holds for model 1.
+
+
+ii. 
+```{r}
+model = lm(price ~ nox, data)
+summary(model)
+```
+We can see that the regression model is:
+$$
+price = 41307.8 - 3386.9*nox
+$$
+```{r}
+# Load libraries
+library("lmtest")
+library("sandwich")
+
+# Robust t test
+coeftest(model, vcov = vcovHC(model, type = "HC0"))
+```
+The heteroskedasticity-robust (HC) standard errors of the intercept is 41307.81 and -3386.85 of the nox. The effect of nox is negative. As we can see from the scatter plot, the effect of nox is negative. And when nox is less 7000, the uncertainty between the two variables is high, thus the model is heteroskedasticity.
+
+iii. As we can see from the results of t-test, the effect of nox on price statistically significant at the 5% and 1% significance level. 
+```{r}
+confint(model,'nox',level=0.95)
+```
+At 95% confidence interval for $\beta_1$, the range is -4016.262 to -2757.443, which is $-3386.852 \pm 629.410$.
+
+iv. Yes, potential omitted variables in OLS can be a concern because they can lead to biased and inconsistent estimates of the regression coefficients. The omitted variable is negatively correlated with the included variable, then the coefficient of the included variable may be underestimated.
+
+
+
+v. 
+Fit model 2:
+```{r}
+model_multi = lm(price ~ nox + rooms + dist + crime + proptax, data)
+summary(model_multi)
+```
+```{r}
+# Robust t test
+coeftest(model_multi, vcov = vcovHC(model_multi, type = "HC0"))
+```
+The heteroskedasticity robust standard error for nox is 387.347. The heteroskedasticity robust standard error for rooms is 666.642. The heteroskedasticity robust standard error for dist is 174.699. The heteroskedasticity robust standard error for crime is 30.271. The heteroskedasticity robust standard error for rooms is 26.688. 
+```{r}
+
+confint(model_multi,'nox',level=0.95)
+```
+95% interval for $\beta_1$ is (-2544.72, -930.5992). The estimated effect of nox is smaller than the results in ii-iii.
+
+vi. R-square and adjusted R-square
+```{r}
+# rquare for model 1
+print(summary(model)$r.squared)
+```
+
+```{r}
+# rquare for model 2
+print(summary(model_multi)$r.squared)
+```
+
+```{r}
+# adjusted rquare for model 1
+print(summary(model)$adj.r.squared)
+```
+
+```{r}
+# rquare for model 2
+print(summary(model_multi)$adj.r.squared)
+```
+The $R^2$ for model 1 is 0.182, and the $R^2$ for model 2 is 0.588. The $\bar{R^2}$ of model 1 is 0.180, and the $\bar{R^2}$ of model 2 is 0.584. Model 2 is better because both $R^2$ and $\bar{R^2}$ is closer to 1.
+
+vii. 
+```{r}
+-5.5 * confint(model_multi,'nox',level=0.95)
+```
+At 95% confidence interval, decreasing nox by 5.5 will cause the price to increase by 5118.296 to 13995.96.
+
+viii. 
+```{r}
+-3.5 * confint(model_multi,'crime',level=0.95)
+```
+At 95% confidence interval, decreasing nox by 5.5 will cause the price to increase by 263.1427 to 787.3495. I would prefer reducing pollution than crime, because it will cause more increment of the price.
+
+ix. 
+```{r}
+(3.5 - 5.5) * confint(model_multi, "nox", level = 0.95) + (70-40) * confint(model_multi, "proptax", level = 0.95)
+```
+At 95% confidence level, the housing price will increase by 554.4215 to 998.7865.
+
+x.The null hypothesis in multiple linear regression can be written in the usual way as:
+$$
+H0: \beta_2 = \beta_3 = \beta_4 = \beta_5 = 0
+$$
+Where $\beta_2$ is the slope for rooms, $\beta_3$is the slope for dist, $\beta_4$ is the slope for crime, $\beta_5$ is the slope for proptax.
+
+
+In matrix notation, the null hypothesis is:
+$$
+\begin{vmatrix}
+1 & 0 & 0 & 0\\
+0 & 1 & 0 & 0\\
+0 & 0 & 1 & 0\\
+0 & 0 & 0 & 1
+\end{vmatrix}
+*
+\begin{vmatrix}
+\beta_2\\
+\beta_3\\
+\beta_4\\ 
+\beta_5
+\end{vmatrix}=\begin{vmatrix}
+0\\
+0\\
+0\\ 
+0
+\end{vmatrix}
+$$
+
+Here q equals 4 because the number of coefficients that are being tested is 4.
+
+xi.
+```{r}
+library(aod)
+wald.test(Sigma = vcov(model_multi), b = coef(model_multi), Terms = 2:5)
+```
+According to Wald test, the P value is 0, which means we can reject H0 at the 95% confidence level.
+
+xii.
+At the 4 degrees of freedom (df=4), the critical value for rejecting the null hypothesis at a significance level of 0.01 is 13.3. Thus, there is no level in the table at which we cannot reject $H_0$ for this particular chi-square value and degrees of freedom. This suggest p-value is 0, indicating strong evidence against the null hypothesis.

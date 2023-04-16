@@ -1,0 +1,37 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+
+# Problem Set 4: Forecasting the Unemployment Rate
+
+## i. Load the dataset
+```{r}
+library("fredr")
+library("dynlm")
+library("timetk")
+```
+## ii. Set API key
+```{r}
+fredr_set_key("5bc428e1039cc5ca47ae6cee02e5fe02")
+```
+## iii. Download and read the dataset
+```{r}
+Claims <-fredr( series_id = "ICSA",frequency = "m", observation_start=as.Date("1990-01-01"), 
+                observation_end=as.Date("2023-04-01"))
+Unempl <-fredr( series_id = "UNRATE",frequency = "m", observation_start=as.Date("1990-01-01"), 
+                observation_end=as.Date("2023-04-01"))
+Claims_w <-fredr( series_id = "ICSA",frequency = "w", observation_start=as.Date("1990-01-01"), 
+                  observation_end=as.Date("2023-04-01"))
+Claims = tk_zoo_(Claims)
+Unempl = tk_zoo_(Unempl)
+data = merge(Claims,Unempl)
+colnames(data)= c("Claims", "Unempl")
+data["2023-03-01"]
+```
+The unemployment rate in March 2023 is 3.5%.
+
+## iv. The initial claims number is a flow variable that measures the number of individuals who have filed for unemployment benefits in a given week or month. In contrast, the unemployment rate is a stock variable that measures the total number of individuals who are currently unemployed at a particular point in time. Using the initial claims number to predict changes in the unemployment rate is a good strategy because it captures the inflow of newly unemployed workers into the labor market, which can provide insight into the health of the labor market. By analyzing the change in the initial claims number over time, economists can gain a sense of whether the labor market is improving or deteriorating, and whether the unemployment rate is likely to increase or decrease in the future. The initial claims number can also serve as a leading indicator of changes in the unemployment rate, making it a useful tool for forecasting. Overall, focusing on the flow variable of initial claims rather than the stock variable of unemployment numbers can provide a better understanding of the direction of the labor market and help predict changes in the unemployment rate more accurately.
+
+## v. 
